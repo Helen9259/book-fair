@@ -281,4 +281,274 @@
 <body>
   <main class="ticket" role="main">
     <h1 class="invite">초대장</h1>
-    <p
+    <p class="event">2026 서울국제도서전</p>
+
+    <ul class="info">
+      <li><span class="emoji" aria-hidden="true">📅</span>2026년 6월 26일 (금)</li>
+      <li><a href="https://naver.me/5hua3oQi" target="_blank" rel="noopener" aria-label="코엑스 위치 네이버 지도에서 열기"><span class="emoji" aria-hidden="true">📍</span>코엑스 A·B1홀 · 서울 삼성동 <span class="go" aria-hidden="true">→</span></a></li>
+      <li><a href="https://sibf.kr/" target="_blank" rel="noopener" aria-label="서울국제도서전 공식 홈페이지 새 탭에서 열기"><span class="emoji" aria-hidden="true">🔗</span>서울국제도서전 홈페이지 <span class="go" aria-hidden="true">→</span></a></li>
+    </ul>
+
+    <div class="perf" aria-hidden="true"></div>
+
+    <p class="ask">같이 <span class="accent">서울국제도서전</span> 가실래요?<span class="wink">😉</span></p>
+
+    <div class="buttons">
+      <button class="yes" id="yes" type="button">좋아요!</button>
+      <button class="no" id="no" type="button">아니요</button>
+    </div>
+
+    <div class="result" id="result" role="status" aria-live="polite">
+      <strong>좋아요! 그럼 정해졌다 🥳</strong>
+      <p>2026년 6월 26일 금요일, 코엑스에서 만나요. 📚</p>
+    </div>
+
+    <div class="namebox" id="namebox">
+      <label for="nameInput">이름을 적어주세요 ✏️</label>
+      <div class="row">
+        <input id="nameInput" type="text" maxlength="20" placeholder="이름" autocomplete="off" />
+        <button class="add" id="add" type="button">추가</button>
+      </div>
+    </div>
+
+    <div class="guests" id="guests">
+      <h2>🙌 같이 가는 사람들 <span class="count"><span id="count">0</span>명</span></h2>
+      <ul class="chips" id="chipList"></ul>
+      <p class="empty" id="empty">아직 아무도 없어요. 첫 번째로 이름을 남겨보세요!</p>
+    </div>
+  </main>
+
+<!-- ===== 1) 화면 동작 (모션·이름 입력) : 항상 실행됨 ===== -->
+<script>
+  (function(){
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var noBtn    = document.getElementById('no');
+    var yesBtn   = document.getElementById('yes');
+    var result   = document.getElementById('result');
+    var buttons  = document.querySelector('.buttons');
+    var namebox  = document.getElementById('namebox');
+    var input    = document.getElementById('nameInput');
+    var addBtn   = document.getElementById('add');
+    var guestsBox= document.getElementById('guests');
+    var chipList = document.getElementById('chipList');
+    var countEl  = document.getElementById('count');
+    var emptyEl  = document.getElementById('empty');
+
+    /* 데이터 저장소: Firebase 연결 시 아래 store 가 채워지고,
+       연결 전/실패 시엔 localGuests(임시 메모리)로 동작 */
+    var store = null;
+    var localGuests = [];
+    var localId = 0;
+
+    function renderEntries(entries){
+      chipList.innerHTML = '';
+      entries.forEach(function(e){
+        var li = document.createElement('li');
+
+        var label = document.createElement('span');
+        label.textContent = e.name;
+        li.appendChild(label);
+
+        var del = document.createElement('button');
+        del.className = 'del';
+        del.type = 'button';
+        del.textContent = '×';
+        del.setAttribute('aria-label', e.name + ' 명단에서 빼기');
+        del.addEventListener('click', function(){ removeGuest(e.key); });
+        li.appendChild(del);
+
+        chipList.appendChild(li);
+      });
+      countEl.textContent = entries.length;
+      emptyEl.style.display = entries.length ? 'none' : 'block';
+    }
+
+    function removeGuest(key){
+      if(store){ store.remove(key); }
+      else{
+        localGuests = localGuests.filter(function(g){ return g.key !== key; });
+        renderEntries(localGuests);
+      }
+    }
+
+    function addName(){
+      var name = input.value.trim();
+      if(!name){ input.focus(); return; }
+      if(store){ store.add(name); }
+      else{
+        localGuests.push({ key: 'L' + (++localId), name: name });
+        renderEntries(localGuests);
+      }
+      input.value = '';
+      input.focus();
+      try{ localStorage.setItem('sibf-joined', '1'); }catch(e){}
+    }
+
+    function showJoinedState(){
+      buttons.style.display = 'none';
+      if(noBtn.classList.contains('loose')) noBtn.remove();
+      namebox.classList.add('show');
+      result.classList.add('show');
+      guestsBox.classList.add('show');
+    }
+
+    /* Firebase 모듈이 호출할 연결 지점 */
+    window.invite = {
+      setStore: function(s){ store = s; },
+      render: renderEntries
+    };
+
+    /* 좋아요! → 이름 묻기 + 명단 보이기 */
+    yesBtn.addEventListener('click', function(){
+      showJoinedState();
+      result.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'nearest' });
+      input.focus();
+      celebrate();
+    });
+
+    addBtn.addEventListener('click', addName);
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); addName(); }
+    });
+
+    /* 이미 한 번 참여한 사람은 다시 들어오면 명단 화면으로 시작 */
+    try{ if(localStorage.getItem('sibf-joined')){ showJoinedState(); } }catch(e){}
+
+    /* ---- '아니요' 도망가기 ---- */
+    function dodge(){
+      if(!noBtn.classList.contains('loose')){
+        var r = noBtn.getBoundingClientRect();
+        noBtn.style.width = r.width + 'px';
+        noBtn.style.left  = r.left + 'px';
+        noBtn.style.top   = r.top + 'px';
+        noBtn.classList.add('loose');
+        document.body.appendChild(noBtn);
+      }
+      var pad = 14;
+      var w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+      var maxX = Math.max(pad, window.innerWidth  - w - pad);
+      var maxY = Math.max(pad, window.innerHeight - h - pad);
+      noBtn.style.left = (pad + Math.random() * (maxX - pad)) + 'px';
+      noBtn.style.top  = (pad + Math.random() * (maxY - pad)) + 'px';
+    }
+    noBtn.addEventListener('mouseenter', dodge);
+    noBtn.addEventListener('mousedown',  function(e){ e.preventDefault(); dodge(); });
+    noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); dodge(); }, {passive:false});
+    noBtn.addEventListener('click',      function(e){ e.preventDefault(); dodge(); });
+
+    /* ---- 티켓 옆면 노치를 절취선에 맞춤 ---- */
+    var ticket = document.querySelector('.ticket');
+    var perf   = document.querySelector('.perf');
+    function setNotch(){
+      if(!ticket || !perf) return;
+      var y = perf.offsetTop + perf.offsetHeight / 2;
+      ticket.style.setProperty('--ny', y + 'px');
+    }
+    setNotch();
+    window.addEventListener('resize', setNotch);
+    window.addEventListener('load', setNotch);
+    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(setNotch); }
+
+    window.addEventListener('resize', function(){
+      if(!noBtn.classList.contains('loose')) return;
+      var w = noBtn.offsetWidth, h = noBtn.offsetHeight, pad = 12;
+      noBtn.style.left = Math.min(parseFloat(noBtn.style.left)||0, window.innerWidth  - w - pad) + 'px';
+      noBtn.style.top  = Math.min(parseFloat(noBtn.style.top) ||0, window.innerHeight - h - pad) + 'px';
+    });
+
+    /* ---- 컨페티 ---- */
+    function celebrate(){
+      var emojis = ['📚','🎉','✨','💛','📖','🥳'];
+      var count = reduce ? 10 : 34;
+      var cx = window.innerWidth / 2;
+      var cy = window.innerHeight / 2;
+      for(var i=0;i<count;i++){
+        (function(){
+          var el = document.createElement('span');
+          el.className = 'confetti';
+          el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+          el.style.left = cx + 'px';
+          el.style.top  = cy + 'px';
+          document.body.appendChild(el);
+
+          var ang = Math.random() * Math.PI * 2;
+          var dist = 120 + Math.random() * 260;
+          var dx = Math.cos(ang) * dist;
+          var dy = Math.sin(ang) * dist - 120;
+          var rot = (Math.random()*720 - 360);
+          var dur = 900 + Math.random()*700;
+          var start = null;
+
+          function step(t){
+            if(start === null) start = t;
+            var p = Math.min((t - start) / dur, 1);
+            var ease = 1 - Math.pow(1 - p, 2);
+            var fall = p * p * 220;
+            el.style.transform =
+              'translate(' + (dx*ease) + 'px,' + (dy*ease + fall) + 'px) rotate(' + (rot*ease) + 'deg)';
+            el.style.opacity = (1 - p).toFixed(2);
+            if(p < 1){ requestAnimationFrame(step); }
+            else{ el.remove(); }
+          }
+          requestAnimationFrame(step);
+        })();
+      }
+    }
+    window.__celebrate = celebrate;
+  })();
+</script>
+
+<!-- ===== 2) Firebase (실시간 공유 명단) : 설정값을 채우면 활성화됨 ===== -->
+<!-- 설정값을 아직 안 넣었거나 불러오기 실패해도 위 화면 동작에는 영향 없음 -->
+<script type="module">
+  /* ▼▼▼ Firebase 콘솔에서 복사한 본인 설정값을 붙여넣으세요 ▼▼▼ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyB3_5_2rcOwEa2E7Ermb7eVVs48CyBEDTg",
+    authDomain: "book-fair-1b5a8.firebaseapp.com",
+    databaseURL: "https://book-fair-1b5a8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "book-fair-1b5a8",
+    storageBucket: "book-fair-1b5a8.firebasestorage.app",
+    messagingSenderId: "286557457375",
+    appId: "1:286557457375:web:35a50a58c8576b82f8526a",
+    measurementId: "G-5FDQ1ZTJDZ"
+  };
+  /* ▲▲▲ databaseURL 까지 7줄 모두 채워야 실시간 공유가 켜져요 ▲▲▲ */
+
+  // 아직 설정 전이면(placeholder) Firebase를 건너뛰고 임시 명단으로 둠
+  const notReady = Object.values(firebaseConfig).some(
+    (v) => typeof v === "string" && v.indexOf("여기에") !== -1
+  );
+
+  if(!notReady){
+    try{
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js");
+      const { getDatabase, ref, push, remove, onValue } =
+        await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js");
+
+      const app = initializeApp(firebaseConfig);
+      const db  = getDatabase(app);
+      const guestsRef = ref(db, "guests");
+
+      window.invite.setStore({
+        add: (name) => push(guestsRef, { name: name, ts: Date.now() }),
+        remove: (key) => remove(ref(db, "guests/" + key))
+      });
+
+      onValue(guestsRef, (snapshot) => {
+        const val = snapshot.val() || {};
+        const entries = Object.keys(val).map((key) => ({
+          key: key,
+          name: (val[key] && val[key].name) ? val[key].name : "",
+          ts: (val[key] && val[key].ts) || 0
+        }));
+        entries.sort((a, b) => a.ts - b.ts);
+        window.invite.render(entries);
+      });
+    }catch(err){
+      console.warn("Firebase 연결 실패 — 임시 명단으로 동작합니다.", err);
+    }
+  }
+</script>
+</body>
+</html>
