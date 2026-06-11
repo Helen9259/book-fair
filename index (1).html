@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>같이 서울국제도서전 가실래요?</title>
+
+<!-- 링크 미리보기 (카톡/메신저 공유용) -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="같이 서울국제도서전 가실래요? 😉" />
+<meta property="og:description" content="2026. 6. 26 (금) · 코엑스 A·B1홀, 서울 삼성동" />
+<!-- 아래 og:image / og:url 은 배포 후 실제 주소로 바꿔도 좋아요 (없어도 제목·설명은 떠요) -->
+<meta property="og:image" content="./og.png" />
+<meta name="theme-color" content="#F2503C" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --paper:#FBF6F0;
+    --card:#FFFFFF;
+    --ink:#1B1A17;
+    --muted:#857E74;
+    --coral:#F73B2B;
+    --coral-ink:#D2331E;
+    --coral-soft:#FDE0D8;
+    --line:#E9DFD1;
+    --radius:20px;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{height:100%;}
+
+  body{
+    margin:0;
+    font-family:"Gowun Dodum", system-ui, -apple-system, sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 16% 10%, #FFE9DD 0, transparent 44%),
+      radial-gradient(circle at 86% 88%, #FFE4D3 0, transparent 48%),
+      var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 20px;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  .ticket{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:38px 40px 40px;
+    text-align:center;
+    --ny:50%;
+    --nr:15px;
+    -webkit-mask:
+      radial-gradient(circle var(--nr) at left var(--ny), #0000 98%, #000 100%),
+      radial-gradient(circle var(--nr) at right var(--ny), #0000 98%, #000 100%);
+    -webkit-mask-composite:source-in;
+    mask:
+      radial-gradient(circle var(--nr) at left var(--ny), #0000 98%, #000 100%),
+      radial-gradient(circle var(--nr) at right var(--ny), #0000 98%, #000 100%);
+    mask-composite:intersect;
+    filter:drop-shadow(0 20px 30px rgba(80,45,30,.18));
+    animation:rise .7s cubic-bezier(.2,.7,.2,1) both;
+  }
+
+  @keyframes rise{
+    from{opacity:0; transform:translateY(16px) scale(.985);}
+    to{opacity:1; transform:none;}
+  }
+
+  /* 큰 초대장 헤더 */
+  .invite{
+    font-size:clamp(2.5rem, 9vw, 3.1rem);
+    line-height:1.12;
+    font-weight:400;
+    color:var(--coral);
+    margin:0 0 8px;
+    letter-spacing:.03em;
+  }
+
+  .event{
+    font-size:1rem;
+    color:var(--muted);
+    margin:0 0 26px;
+    letter-spacing:.04em;
+  }
+
+  /* 질문 (한 줄) */
+  .ask{
+    font-size:clamp(.98rem, 4.4vw, 1.5rem);
+    line-height:1.4;
+    margin:6px 0 26px;
+    white-space:nowrap;
+  }
+  .ask .accent{color:var(--coral);}
+  .ask .wink{margin-left:3px;}
+
+  /* 정보 리스트 (날짜 · 장소 · 링크) */
+  .info{
+    list-style:none;
+    margin:0 0 4px;
+    padding:0;
+  }
+  .info li{
+    font-size:1.04rem;
+    line-height:1.5;
+    margin:11px 0;
+    color:var(--ink);
+  }
+  .info .emoji{
+    margin-right:8px;
+  }
+  .info a{
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+    padding-bottom:1px;
+    transition:color .18s, border-color .18s;
+  }
+  .info a:hover{color:var(--coral-ink); border-color:var(--coral);}
+  .info a .go{color:var(--coral); margin-left:2px;}
+
+  /* 티켓 절취선 */
+  .perf{
+    position:relative;
+    height:1px;
+    margin:4px -40px 26px;
+    border-top:2px dashed var(--line);
+  }
+
+  /* 버튼 */
+  .buttons{display:flex; gap:12px; align-items:center; justify-content:center;}
+
+  button{
+    font-family:inherit;
+    font-size:1.05rem;
+    cursor:pointer;
+    border-radius:12px;
+    padding:14px 26px;
+    border:1px solid transparent;
+    transition:transform .12s, box-shadow .18s, background .18s;
+  }
+  button:active{transform:translateY(1px);}
+  .yes{
+    background:var(--coral);
+    color:#fff;
+    box-shadow:0 12px 24px -12px rgba(242,80,60,.7);
+  }
+  .yes:hover{background:#E8442F;}
+  .no{
+    background:#fff;
+    color:var(--muted);
+    border-color:var(--line);
+  }
+  .no:hover{background:#fff;}
+  /* 도망 모드: 화면 위를 자유롭게 떠다님 */
+  .no.loose{position:fixed; z-index:50; margin:0;}
+
+  :focus-visible{outline:2.5px solid var(--coral); outline-offset:3px;}
+
+  /* 수락 결과 */
+  .result{
+    display:none;
+    margin-top:6px;
+    padding:20px 22px;
+    background:var(--coral-soft);
+    border:1px solid #F6CDC3;
+    border-radius:14px;
+    animation:pop .45s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .result.show{display:block;}
+  .result strong{color:var(--coral-ink); font-size:1.12rem;}
+  .result p{margin:6px 0 0; color:#9a5448; font-size:.95rem;}
+  @keyframes pop{from{opacity:0; transform:scale(.94);} to{opacity:1; transform:none;}}
+
+  .confetti{
+    position:fixed;
+    top:0;left:0;
+    pointer-events:none;
+    font-size:22px;
+    will-change:transform,opacity;
+    z-index:60;
+  }
+
+  @media (max-width:480px){
+    .ticket{padding:30px 22px 32px;}
+    .perf{margin-left:-22px; margin-right:-22px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms !important; transition-duration:.05ms !important;}
+  }
+</style>
+</head>
+<body>
+  <main class="ticket" role="main">
+    <h1 class="invite">초대장</h1>
+    <p class="event">2026 서울국제도서전</p>
+
+    <ul class="info">
+      <li><span class="emoji" aria-hidden="true">📅</span>2026년 6월 26일 (금)</li>
+      <li><a href="https://naver.me/5hua3oQi" target="_blank" rel="noopener" aria-label="코엑스 위치 네이버 지도에서 열기"><span class="emoji" aria-hidden="true">📍</span>코엑스 A·B1홀 · 서울 삼성동 <span class="go" aria-hidden="true">→</span></a></li>
+      <li><a href="https://sibf.kr/" target="_blank" rel="noopener" aria-label="서울국제도서전 공식 홈페이지 새 탭에서 열기"><span class="emoji" aria-hidden="true">🔗</span>서울국제도서전 홈페이지 <span class="go" aria-hidden="true">→</span></a></li>
+    </ul>
+
+    <div class="perf" aria-hidden="true"></div>
+
+    <p class="ask">같이 <span class="accent">서울국제도서전</span> 가실래요?<span class="wink">😉</span></p>
+
+    <div class="buttons">
+      <button class="yes" id="yes" type="button">좋아요!</button>
+      <button class="no" id="no" type="button">아니요</button>
+    </div>
+
+    <div class="result" id="result" role="status" aria-live="polite">
+      <strong>좋아요! 그럼 정해졌다 🥳</strong>
+      <p>2026년 6월 26일 금요일, 코엑스에서 만나요. 📚</p>
+    </div>
+  </main>
+
+<script>
+  (function(){
+    var noBtn  = document.getElementById('no');
+    var yesBtn = document.getElementById('yes');
+    var result = document.getElementById('result');
+    var buttons = document.querySelector('.buttons');
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // 티켓 옆면 반원(노치)을 절취선 높이에 맞춤
+    var ticket = document.querySelector('.ticket');
+    var perf   = document.querySelector('.perf');
+    function setNotch(){
+      if(!ticket || !perf) return;
+      var y = perf.offsetTop + perf.offsetHeight / 2;
+      ticket.style.setProperty('--ny', y + 'px');
+    }
+    setNotch();
+    window.addEventListener('resize', setNotch);
+    window.addEventListener('load', setNotch);
+    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(setNotch); }
+
+    function dodge(){
+      // 처음 도망칠 때 화면 위를 자유롭게 떠다니도록 전환
+      if(!noBtn.classList.contains('loose')){
+        var r = noBtn.getBoundingClientRect();
+        noBtn.style.width = r.width + 'px';
+        noBtn.style.left  = r.left + 'px';
+        noBtn.style.top   = r.top + 'px';
+        noBtn.classList.add('loose');
+        // 카드의 mask/filter가 fixed 요소를 잘라내므로 body로 빼낸다
+        document.body.appendChild(noBtn);
+      }
+      var pad = 14;
+      var w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+      var maxX = Math.max(pad, window.innerWidth  - w - pad);
+      var maxY = Math.max(pad, window.innerHeight - h - pad);
+      noBtn.style.left = (pad + Math.random() * (maxX - pad)) + 'px';
+      noBtn.style.top  = (pad + Math.random() * (maxY - pad)) + 'px';
+    }
+
+    // PC: 가까이 오거나 누르려 하면 도망 / 모바일: 닿기 전에 도망
+    noBtn.addEventListener('mouseenter', dodge);
+    noBtn.addEventListener('mousedown',  function(e){ e.preventDefault(); dodge(); });
+    noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); dodge(); }, {passive:false});
+    noBtn.addEventListener('click',      function(e){ e.preventDefault(); dodge(); });
+
+    // 좋아요!
+    yesBtn.addEventListener('click', function(){
+      buttons.style.display = 'none';
+      if(noBtn.classList.contains('loose')) noBtn.remove();
+      result.classList.add('show');
+      result.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'nearest'});
+      celebrate();
+    });
+
+    // 순수 JS 컨페티 (이모지 버스트)
+    function celebrate(){
+      var emojis = ['📚','🎉','✨','💛','📖','🥳'];
+      var count = reduce ? 10 : 34;
+      var cx = window.innerWidth / 2;
+      var cy = window.innerHeight / 2;
+      for(var i=0;i<count;i++){
+        (function(){
+          var el = document.createElement('span');
+          el.className = 'confetti';
+          el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+          el.style.left = cx + 'px';
+          el.style.top  = cy + 'px';
+          document.body.appendChild(el);
+
+          var ang = Math.random() * Math.PI * 2;
+          var dist = 120 + Math.random() * 260;
+          var dx = Math.cos(ang) * dist;
+          var dy = Math.sin(ang) * dist - 120; // 살짝 위로
+          var rot = (Math.random()*720 - 360);
+          var dur = 900 + Math.random()*700;
+          var start = null;
+
+          function step(t){
+            if(start === null) start = t;
+            var p = Math.min((t - start) / dur, 1);
+            var ease = 1 - Math.pow(1 - p, 2);
+            var fall = p * p * 220; // 중력
+            el.style.transform =
+              'translate(' + (dx*ease) + 'px,' + (dy*ease + fall) + 'px) rotate(' + (rot*ease) + 'deg)';
+            el.style.opacity = (1 - p).toFixed(2);
+            if(p < 1){ requestAnimationFrame(step); }
+            else{ el.remove(); }
+          }
+          requestAnimationFrame(step);
+        })();
+      }
+    }
+
+    // 창 크기 바뀌어도 버튼이 화면 밖에 갇히지 않게
+    window.addEventListener('resize', function(){
+      if(!noBtn.classList.contains('loose')) return;
+      var w = noBtn.offsetWidth, h = noBtn.offsetHeight, pad = 12;
+      noBtn.style.left = Math.min(parseFloat(noBtn.style.left)||0, window.innerWidth  - w - pad) + 'px';
+      noBtn.style.top  = Math.min(parseFloat(noBtn.style.top) ||0, window.innerHeight - h - pad) + 'px';
+    });
+  })();
+</script>
+</body>
+</html>
